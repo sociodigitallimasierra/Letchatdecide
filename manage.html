@@ -35,7 +35,7 @@
   <div class="tabs">
     <button class="tab active" data-tab="products">Products & Stock</button>
     <button class="tab" data-tab="sales">Sales</button>
-    <button class="tab" data-tab="settings">Google Sheets & Stripe</button>
+    <button class="tab" data-tab="settings">Google Sheets & PayPal</button>
   </div>
 
   <div id="panel-products" class="panel active">
@@ -44,8 +44,8 @@
       <button class="btn btn-sm" onclick="syncFromSheet()">↻ Sync from Sheets</button>
       <button class="btn btn-sm" onclick="exportCSV()">Export CSV</button>
     </div>
-    <div class="table-wrap"><table><thead><tr><th>Product</th><th>Price (USD)</th><th>Stock</th><th>File URL</th><th>Stripe Link</th><th>Active</th><th>Actions</th></tr></thead><tbody id="productsTbody"></tbody></table></div>
-    <p class="muted" style="font-size:12px;margin-top:8px">Stock decreases by 1 on each confirmed purchase. Prices are in USD. <code>File URL</code> is the Google Drive / direct download link sent to buyer. <code>Stripe Link</code> is your Stripe Payment Link.</p>
+    <div class="table-wrap"><table><thead><tr><th>Product</th><th>Price (USD)</th><th>Stock</th><th>File URL</th><th>PayPal Link</th><th>Active</th><th>Actions</th></tr></thead><tbody id="productsTbody"></tbody></table></div>
+    <p class="muted" style="font-size:12px;margin-top:8px">Stock decreases by 1 on each verified PayPal payment. <code>PayPal Link</code> is your PayPal payment URL (add <code>?custom=PRODUCT_ID</code> for auto-verification via IPN).</p>
   </div>
 
   <div id="panel-sales" class="panel">
@@ -57,7 +57,7 @@
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
       <div class="stat" style="grid-column:span 2">
         <h3>Google Sheets connection</h3>
-        <p class="muted" style="font-size:13px">Products and sales are stored in Google Sheets via an Apps Script Web App. Paste your IDs here — they are saved in this browser (localStorage). Follow <code>SETUP.md</code> to create the sheet + deploy the script.</p>
+        <p class="muted" style="font-size:13px">Products and sales are stored in Google Sheets via Apps Script Web App. Paste your IDs here. Follow <code>SETUP.md</code> PayPal IPN section.</p>
         <label class="muted" style="font-size:12px;margin-top:10px;display:block">Google Sheet ID</label>
         <input id="sheetId" class="input" placeholder="1AbC... (from sheet URL)">
         <label class="muted" style="font-size:12px;margin-top:8px;display:block">Apps Script Web App URL</label>
@@ -66,13 +66,12 @@
         <div id="settingsInfo" class="notice" style="margin-top:10px"></div>
       </div>
       <div class="stat">
-        <h3>Stripe (Payment Links)</h3>
-        <p class="muted" style="font-size:13px">Create a Payment Link per product in Stripe Dashboard → Payments → Payment Links. Paste it into the product's <b>Stripe Link</b> field. Leave empty to use email-only flow.</p>
-        <p class="muted" style="font-size:12px;margin-top:8px">Recommended: enable Stripe email receipts + redirect success to your store.</p>
+        <h3>PayPal — automatic verification</h3>
+        <p class="muted" style="font-size:13px">Option A (recommended): Enable IPN in PayPal → IPN URL = your Apps Script URL. Each PayPal Link must include <code>&custom=PRODUCT_ID</code> so the script knows which file to send.<br><br>Option B: Without IPN, buyer returns and enters same PayPal email to unlock download manually (current fallback).</p>
       </div>
       <div class="stat">
         <h3>Autonomous delivery</h3>
-        <p class="muted" style="font-size:13px">On purchase, the site generates a tokenized link, decrements stock, saves the sale to Sheets, and (if Apps Script is set) emails the buyer the <code>fileUrl</code> automatically.</p>
+        <p class="muted" style="font-size:13px">When IPN is VERIFIED & payment_status=Completed, Apps Script creates the sale, decrements stock, and emails the <code>fileUrl</code> automatically. No manual action needed.</p>
       </div>
     </div>
   </div>
@@ -89,7 +88,7 @@
       <label>Stock<input id="p_stock" class="input" type="number" step="1" min="0"></label>
       <label style="grid-column:span 2">Image URL or path<input id="p_image" class="input" placeholder="./producto-ejemplo.png or https://..."></label>
       <label style="grid-column:span 2">File / Download URL (Drive link)<input id="p_file" class="input" placeholder="https://drive.google.com/..."></label>
-      <label style="grid-column:span 2">Stripe Payment Link<input id="p_stripe" class="input" placeholder="https://buy.stripe.com/..."></label>
+      <label style="grid-column:span 2">PayPal Payment Link<input id="p_paypal" class="input" placeholder="https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=you@email.com&amount=29.00&currency_code=USD&item_name=My+Product&custom=prod_001"></label>
       <label>Active<select id="p_active" class="select"><option value="true">Yes</option><option value="false">No (hidden)</option></select></label>
     </div>
     <div class="row" style="margin-top:12px"><button class="btn" onclick="closeProductModal()">Cancel</button><button class="btn btn-primary" style="flex:1" onclick="saveProduct()">Save product</button></div>

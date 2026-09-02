@@ -19,7 +19,7 @@ const CONFIG = {
       stock: 999,
       image: "./producto-ejemplo.png",
       fileUrl: "#",
-      stripeLink: "",
+      paypalLink: "",
       active: true
     }
   ]

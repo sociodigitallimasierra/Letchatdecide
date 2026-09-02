@@ -3,9 +3,8 @@ function formatUSD(n){ return new Intl.NumberFormat('en-US',{style:'currency',cu
 function toast(msg){ const t=$("#toast"); if(!t) return; t.textContent=msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),2600); }
 function uuid(){ return "ord_"+Math.random().toString(36).slice(2,9) + Date.now().toString(36); }
 function downloadToken(){ return Math.random().toString(36).slice(2,10)+Math.random().toString(36).slice(2,10); }
-
+function getPayLink(p){ return p.paypalLink || p.stripeLink || ""; }
 let PRODUCTS = loadProducts();
-
 async function init(){
   $("#storeName") && ($("#storeName").textContent = CONFIG.storeName);
   $("#storeTagline") && ($("#storeTagline").textContent = CONFIG.tagline);
@@ -51,15 +50,16 @@ function closeDetails(){ $("#detailsModal").classList.remove("open"); }
 function buy(id){
   const p=PRODUCTS.find(x=>x.id===id); if(!p) return;
   if(p.stock<=0) return toast("This product is out of stock.");
-  if(p.stripeLink){ window.open(p.stripeLink, "_blank"); openCheckout(p, true); }
+  const link=getPayLink(p);
+  if(link){ window.open(link, "_blank"); openCheckout(p, true); }
   else openCheckout(p, false);
 }
-function openCheckout(product, viaStripe){
+function openCheckout(product, viaPaypal){
   pendingProduct=product;
   $("#checkoutModal").classList.add("open");
-  $("#checkoutTitle").textContent = viaStripe ? "Complete your Stripe payment, then enter email" : `Get instant download — ${product.title}`;
+  $("#checkoutTitle").textContent = viaPaypal ? "Complete your PayPal payment, then enter email" : `Get instant download — ${product.title}`;
   $("#checkoutPrice").textContent = formatUSD(Number(product.price));
-  $("#stripeHint").style.display = viaStripe ? "block" : "none";
+  $("#paypalHint").style.display = viaPaypal ? "block" : "none";
   $("#emailInput").value=""; $("#emailInput").focus();
 }
 function closeCheckout(){ $("#checkoutModal").classList.remove("open"); pendingProduct=null; }
@@ -84,7 +84,7 @@ async function confirmPurchase(){
       await fetch(s.appsScriptUrl,{method:"POST", body: JSON.stringify({action:"sendDownload", sale}), headers:{"Content-Type":"text/plain"}});
     }
   }catch{}
-  toast("Purchase confirmed — check your email!");
+  toast("Payment registered — check your email! PayPal verification will also email you automatically.");
 }
 function showDownload(sale, product){
   const url = product.fileUrl && product.fileUrl!=="#" ? product.fileUrl : `success.html?token=${sale.token}&id=${sale.productId}`;

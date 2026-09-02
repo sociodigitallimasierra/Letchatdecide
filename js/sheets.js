@@ -6,9 +6,13 @@ function saveSettings(s){ localStorage.setItem(LS_SETTINGS, JSON.stringify(s)); 
 function loadProducts(){
   try{
     const p = JSON.parse(localStorage.getItem(LS_PRODUCTS)||"null");
-    if(p && Array.isArray(p) && p.length) return p;
+    if(p && Array.isArray(p) && p.length) return p.map(normalizeProduct);
   }catch{}
-  return CONFIG.demoProducts;
+  return CONFIG.demoProducts.map(normalizeProduct);
+}
+function normalizeProduct(p){
+  if(p.paypalLink===undefined && p.stripeLink) p.paypalLink=p.stripeLink;
+  return p;
 }
 function saveProducts(list){ localStorage.setItem(LS_PRODUCTS, JSON.stringify(list)); }
 function loadSales(){ try{ return JSON.parse(localStorage.getItem(LS_SALES)||"[]"); }catch{ return [] } }
@@ -20,7 +24,7 @@ async function fetchProductsFromSheet(){
     const r = await fetch(s.appsScriptUrl + "?action=getProducts", {method:"GET"});
     if(!r.ok) throw new Error(r.statusText);
     const j = await r.json();
-    if(j.products) { saveProducts(j.products); return j.products; }
+    if(j.products) { const norm=j.products.map(normalizeProduct); saveProducts(norm); return norm; }
   }catch(e){ console.warn("Sheets fetch failed", e); }
   return null;
 }

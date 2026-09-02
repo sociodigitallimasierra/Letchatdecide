@@ -1,8 +1,8 @@
 const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
 function fmt(n){ return new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(n); }
 function toast(m){ const t=$("#toast"); t.textContent=m; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),2500); }
+function getPayLink(p){ return p.paypalLink || p.stripeLink || ""; }
 let PRODUCTS=loadProducts(), SALES=loadSales();
-
 function requireAuth(){
   if(sessionStorage.getItem("dv_admin")==="1") return true;
   $("#loginView").style.display="block"; $("#adminView").style.display="none"; return false;
@@ -36,11 +36,11 @@ function renderProductsTable(){
   const tbody=$("#productsTbody");
   tbody.innerHTML=PRODUCTS.map(p=>`
     <tr>
-      <td><img src="${p.image}" style="width:44px;height:32px;object-fit:cover;border-radius:8px;vertical-align:middle"> <b>${p.title}</b><br><span class="muted">${p.id}</span></td>
+      <td><img src="${p.image}" style="width:44px;height:32px;object-fit:contain;background:#0b0b12;border-radius:8px;vertical-align:middle"> <b>${p.title}</b><br><span class="muted">${p.id}</span></td>
       <td>${fmt(Number(p.price))}</td>
       <td>${p.stock}</td>
       <td><a href="${p.fileUrl}" target="_blank" class="muted">link</a></td>
-      <td>${p.stripeLink?`<a href="${p.stripeLink}" target="_blank">Stripe</a>`:`<span class="muted">—</span>`}</td>
+      <td>${getPayLink(p)?`<a href="${getPayLink(p)}" target="_blank">PayPal</a>`:`<span class="muted">—</span>`}</td>
       <td>${p.active===false?'No':'Yes'}</td>
       <td style="display:flex;gap:6px">
         <button class="btn btn-sm" onclick="editProduct('${p.id}')">Edit</button>
@@ -71,16 +71,17 @@ function saveSettingsUI(){
 }
 function openProductModal(id){
   const isEdit=!!id;
-  const p=isEdit? PRODUCTS.find(x=>x.id===id) : {id:"prod_"+Math.random().toString(36).slice(2,7), title:"", description:"", price:19, stock:100, image:"./producto-ejemplo.png", fileUrl:"", stripeLink:"", active:true};
+  const p=isEdit? PRODUCTS.find(x=>x.id===id) : {id:"prod_"+Math.random().toString(36).slice(2,7), title:"", description:"", price:19, stock:100, image:"./producto-ejemplo.png", fileUrl:"", paypalLink:"", active:true};
+  const payLink=getPayLink(p);
   $("#pmTitle").textContent=isEdit?"Edit product":"Add product";
-  $("#p_id").value=p.id; $("#p_title").value=p.title; $("#p_desc").value=p.description; $("#p_price").value=p.price; $("#p_stock").value=p.stock; $("#p_image").value=p.image; $("#p_file").value=p.fileUrl; $("#p_stripe").value=p.stripeLink; $("#p_active").value=String(p.active!==false);
+  $("#p_id").value=p.id; $("#p_title").value=p.title; $("#p_desc").value=p.description; $("#p_price").value=p.price; $("#p_stock").value=p.stock; $("#p_image").value=p.image; $("#p_file").value=p.fileUrl; $("#p_paypal").value=payLink; $("#p_active").value=String(p.active!==false);
   $("#productModal").classList.add("open");
 }
 function closeProductModal(){ $("#productModal").classList.remove("open"); }
 function editProduct(id){ openProductModal(id); }
 async function saveProduct(){
   const id=$("#p_id").value.trim()||"prod_"+Math.random().toString(36).slice(2,7);
-  const data={ id, title:$("#p_title").value.trim(), description:$("#p_desc").value.trim(), price:parseFloat($("#p_price").value)||0, stock:parseInt($("#p_stock").value)||0, image:$("#p_image").value.trim()||"./producto-ejemplo.png", fileUrl:$("#p_file").value.trim()||"#", stripeLink:$("#p_stripe").value.trim(), active: $("#p_active").value==="true" };
+  const data={ id, title:$("#p_title").value.trim(), description:$("#p_desc").value.trim(), price:parseFloat($("#p_price").value)||0, stock:parseInt($("#p_stock").value)||0, image:$("#p_image").value.trim()||"./producto-ejemplo.png", fileUrl:$("#p_file").value.trim()||"#", paypalLink:$("#p_paypal").value.trim(), active: $("#p_active").value==="true" };
   if(!data.title) return toast("Title required");
   const idx=PRODUCTS.findIndex(x=>x.id===id);
   const mode= idx>=0 ? "update" : "add";
@@ -100,8 +101,8 @@ async function syncFromSheet(){
   renderProductsTable(); renderSalesTable(); renderStats(); toast(a||b?"Synced from Google Sheets":"No Apps Script URL set");
 }
 function exportCSV(){
-  const header="id,title,price,stock,fileUrl,stripeLink,active\n";
-  const rows=PRODUCTS.map(p=> [p.id, `"${p.title.replace(/"/g,'""')}"`, p.price, p.stock, p.fileUrl, p.stripeLink, p.active].join(",")).join("\n");
+  const header="id,title,price,stock,fileUrl,paypalLink,active\n";
+  const rows=PRODUCTS.map(p=> [p.id, `"${p.title.replace(/"/g,'""')}"`, p.price, p.stock, p.fileUrl, getPayLink(p), p.active].join(",")).join("\n");
   const blob=new Blob([header+rows],{type:"text/csv"}); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="products.csv"; a.click();
 }
 function exportSalesCSV(){
@@ -109,7 +110,6 @@ function exportSalesCSV(){
   const rows=SALES.map(s=> [s.id,s.date,`"${s.product}"`,s.email,s.amount,s.status,s.token].join(",")).join("\n");
   const blob=new Blob([h+rows],{type:"text/csv"}); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="sales.csv"; a.click();
 }
-
 document.addEventListener("DOMContentLoaded", ()=>{
   if(requireAuth()) initAdmin();
   $("#productModal")?.addEventListener("click", e=>{ if(e.target.id==="productModal") closeProductModal(); });
