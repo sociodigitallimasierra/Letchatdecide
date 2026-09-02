@@ -143,4 +143,5 @@ function getSheet(name, header){
   }
   return sh;
 }
+function doOptions(e){ return ContentService.createTextOutput('').setMimeType(ContentService.MimeType.TEXT); }
 function json(o){ return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON); }

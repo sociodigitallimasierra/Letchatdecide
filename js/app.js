@@ -9,7 +9,18 @@ async function init(){
   $("#storeName") && ($("#storeName").textContent = CONFIG.storeName);
   $("#storeTagline") && ($("#storeTagline").textContent = CONFIG.tagline);
   render(PRODUCTS);
-  fetchProductsFromSheet().then(remote=>{ if(remote && remote.length){ PRODUCTS=remote; render(PRODUCTS); } });
+  const s=loadSettings();
+  if(s.appsScriptUrl){
+    fetchProductsFromSheet().then(remote=>{
+      if(remote && remote.length){
+        const localStr=JSON.stringify(PRODUCTS.map(p=>p.id+':'+p.stock+':'+p.price).sort());
+        const remoteStr=JSON.stringify(remote.map(p=>p.id+':'+p.stock+':'+p.price).sort());
+        if(localStr!==remoteStr){
+          console.log(`Sheets stock/price differs from local — keeping local display. Use manage.html → Sync to update Sheets, or clear localStorage to force Sheets.`, {local:PRODUCTS, remote});
+        }
+      }
+    });
+  }
   $("#searchInput")?.addEventListener("input", e=>{
     const q=e.target.value.toLowerCase().trim();
     render(PRODUCTS.filter(p=> (p.title+p.description).toLowerCase().includes(q)));
@@ -18,12 +29,14 @@ async function init(){
 }
 function render(list){
   const grid=$("#productGrid"); if(!grid) return;
-  const active = list.filter(p=> p.active!==false);
-  if(active.length===0){ grid.innerHTML='<p class="muted">No products available yet.</p>'; return; }
+  console.log(`Render ${list.length} products`, list);
+  const active = list.filter(p=> String(p.active).toLowerCase()!=="false" && p.active!==false);
+  if(active.length===0){ grid.innerHTML=`<p class="muted">No products available yet. (Total ${list.length} — check Active flag in manage.html)</p>`; return; }
+  if(active.length!==list.length) console.warn(`${list.length-active.length} hidden by Active=false`);
   grid.innerHTML = active.map(p=>{
     const stockLabel = p.stock<=0 ? '<span class="stock low">Sold out</span>' : p.stock<10 ? `<span class="stock low">Only ${p.stock} left</span>` : `<span class="stock ok">In stock • ${p.stock}</span>`;
     return `<article class="card">
-      <div class="card-thumb"><img src="${p.image||'./producto-ejemplo.png'}" alt="${p.title}" loading="lazy"><span class="price-badge">${formatUSD(Number(p.price))}</span>${stockLabel}</div>
+      <div class="card-thumb"><img src="${p.image||'./producto-ejemplo.png'}" alt="${p.title}" loading="lazy" onerror="this.onerror=null;this.src='./producto-ejemplo.png'"><span class="price-badge">${formatUSD(Number(p.price))}</span>${stockLabel}</div>
       <div class="card-body">
         <h3>${p.title}</h3>
         <p>${p.description||''}</p>
@@ -42,7 +55,7 @@ function openDetails(id){
   $("#detailTitle").textContent=p.title;
   $("#detailDesc").textContent=p.description;
   $("#detailPrice").textContent=formatUSD(Number(p.price));
-  $("#detailImage").src=p.image||"./producto-ejemplo.png";
+  $("#detailImage").src=p.image||"./producto-ejemplo.png"; $("#detailImage").onerror=function(){this.onerror=null;this.src="./producto-ejemplo.png";};
   $("#detailsModal").classList.add("open");
 }
 function closeDetails(){ $("#detailsModal").classList.remove("open"); }

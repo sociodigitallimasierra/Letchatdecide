@@ -12,6 +12,8 @@ function loadProducts(){
 }
 function normalizeProduct(p){
   if(p.paypalLink===undefined && p.stripeLink) p.paypalLink=p.stripeLink;
+  if(p.image==="images/pinceles.jpg") p.image="images/pinceles.png";
+  if(p.image && p.image.startsWith("images/")) p.image="./"+p.image;
   return p;
 }
 function saveProducts(list){ localStorage.setItem(LS_PRODUCTS, JSON.stringify(list)); }
@@ -24,7 +26,11 @@ async function fetchProductsFromSheet(){
     const r = await fetch(s.appsScriptUrl + "?action=getProducts", {method:"GET"});
     if(!r.ok) throw new Error(r.statusText);
     const j = await r.json();
-    if(j.products) { const norm=j.products.map(normalizeProduct); saveProducts(norm); return norm; }
+    if(j.products) {
+      const norm=j.products.map(normalizeProduct).filter(p=>p && p.id && p.title);
+      if(norm.length===0) return null;
+      return norm;
+    }
   }catch(e){ console.warn("Sheets fetch failed", e); }
   return null;
 }

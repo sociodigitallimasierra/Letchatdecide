@@ -1,30 +1,38 @@
-# Digital Vault — Setup (GitHub Pages + Google Sheets + Stripe)
+# Let the chat decide — Setup (GitHub Pages + Google Sheets + PayPal)
 
 ## 1. GitHub Pages
-1. Push this folder to a GitHub repo (e.g. `youruser/digital-vault`).
-2. Repo → Settings → Pages → Source: `Deploy from branch` → Branch `main` / root.
-3. Add file `.nojekyll` at root (already included if present; otherwise `New-Item .nojekyll`).
+1. Push this folder to GitHub repo `sociodigitallimasierra/Letchatdecide`.
+2. Settings → Pages → Source: Deploy from branch → `main` / root.
+3. `.nojekyll` already included.
 
 ## 2. Google Sheets (products & sales)
-1. Create a Google Sheet (any name).
-2. Extensions → Apps Script → paste `apps-script/Code.gs` → Save → Deploy → New deployment → Type: Web app → Execute as: Me → Who has access: Anyone → Deploy → Copy the `https://script.google.com/macros/s/.../exec` URL.
-3. The script auto-creates sheets `Products` and `Sales` with headers:
-   - Products: `id,title,description,price,stock,image,fileUrl,stripeLink,active`
+1. Create a Google Sheet.
+2. Extensions → Apps Script → paste `apps-script/Code.gs` → Save → Deploy → Web app → Execute as Me → Who has access: Anyone → Copy `.../exec` URL.
+3. Auto-creates sheets:
+   - Products: `id,title,description,price,stock,image,fileUrl,paypalLink,active`
    - Sales: `id,date,productId,product,email,amount,currency,status,token,fileUrl`
-4. Open `admin.html` → Settings → paste Sheet ID (from sheet URL) and Apps Script URL → Save. Or edit `js/config.js`.
-5. Use Admin → Products to add items; they sync to the sheet.
+4. Open `manage.html` → Settings → paste Sheet ID + Apps Script URL → Save.
+5. Manage → Products → add items; they sync to sheet.
 
-Tip: `image` can be `./producto-ejemplo.png`, a full URL, or a Drive link. `fileUrl` should be a Drive share link with `Anyone with the link — Viewer` (or any direct download URL). `stripeLink` is optional.
+Tip: `image` can be `./images/pinceles.png`, `https://...` or `images/...`. `fileUrl` = Drive link (Anyone with the link). `paypalLink` must include `&custom=PRODUCT_ID` for IPN auto-verify.
 
-## 3. Stripe Payment Links (USD)
-1. Stripe Dashboard → Payments → Payment Links → New → set price in USD → Create link.
-2. Paste link into product's `Stripe Link` field in Admin.
-3. Buyer flow: Click Buy → opens Stripe link in new tab → after paying, returns to store and enters same email to unlock download + email copy (via Apps Script `MailApp`).
+## 3. PayPal (USD) + IPN auto-delivery
+1. PayPal Business → Create payment link/button per product: amount in USD, add `custom` = product `id` (e.g. `prod_001`).
+2. Paste link into product's `PayPal Link` field.
+3. Enable IPN: PayPal → Settings → IPN → IPN URL = your Apps Script `.../exec` → Enable.
+4. Buyer flow: Choose → Enter email → Continue to PayPal → Pay → IPN VERIFIED → Apps Script decrements stock, saves sale, emails `fileUrl` to payer_email (no on-screen download exposed).
+
+Without IPN: buyer still enters email before PayPal; sale is saved as pending_paypal and you can manually verify.
 
 ## 4. Admin
-- URL: `admin.html`
-- Default password: `admin123` — change in `js/config.js` → `adminPassword`.
-- Panels: Products/Stock, Sales, Settings. Stock and prices update live (USD).
+- URL: `manage.html` (hidden, not linked from store)
+- Password: `cga4233Qwee` → change in `js/config.js`
+- Panels: Products/Stock, Sales, Settings, GitHub image storage.
+- GitHub image upload: Settings → paste `owner/repo`, `main`, `images`, PAT (classic, `repo` scope) → in product modal use `Upload image to GitHub repo`.
 
-## 5. Local test
-Just open `index.html` — no build step. Works offline via `localStorage` demo product (`producto-ejemplo.png`) until Sheets is configured.
+## 5. Images
+- Store: `logo.png` (1536x1024), `web-wallpaper.png`, `producto-ejemplo.png` at root, `images/pinceles.png`. Keep uploads <500KB for fast load.
+- Fix: if image fails, falls back to `producto-ejemplo.png`.
+
+## 6. Local test
+Open `index.html` — no build. Works offline via localStorage until Sheets configured. Store now keeps local stock (no auto-overwrite from Sheets) to avoid stock mismatch.

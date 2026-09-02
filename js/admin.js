@@ -131,7 +131,8 @@ async function delProduct(id){
 }
 async function syncFromSheet(){
   const a=await fetchProductsFromSheet(); const b=await fetchSalesFromSheet();
-  if(a) PRODUCTS=a; SALES=loadSales();
+  if(a){ PRODUCTS=a; saveProducts(a); }
+  if(b) SALES=b;
   renderProductsTable(); renderSalesTable(); renderStats(); toast(a||b?"Synced from Google Sheets":"No Apps Script URL set");
 }
 function exportCSV(){
