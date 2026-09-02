@@ -6,7 +6,7 @@ const CONFIG = {
   adminPassword: "cga4233Qwee",
   googleSheet: {
     sheetId: "15-VnTEYhJN_FEBFZ3YQae2v_tIyYC3rowDHR5E2x-KY",
-    appsScriptUrl: "https://script.google.com/macros/s/AKfycbxB3wUyRCogJ32UjR9P_yRItGHjy1qHX77QRL-mI3o9ZIf6vRnneuH1rdV3FeGINzsd/exec",
+    appsScriptUrl: "https://script.google.com/macros/s/AKfycbwwhPO8Kxsjl659R8IXJSymOQ-hmPhshp5SO64SRCMhy2FGmLOxnCsdushtfa2NRDyg/exec",
     productsSheet: "Products",
     salesSheet: "Sales"
   },
