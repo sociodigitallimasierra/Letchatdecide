@@ -16,8 +16,10 @@ function logout(){ sessionStorage.removeItem("dv_admin"); location.reload(); }
 function initAdmin(){
   $("#sheetId").value=loadSettings().sheetId||"";
   $("#appsUrl").value=loadSettings().appsScriptUrl||"";
+  const gh=loadGitHubSettings();
+  $("#ghRepo").value=gh.repo||""; $("#ghBranch").value=gh.branch||"main"; $("#ghFolder").value=gh.folder||"images"; $("#ghToken").value=gh.token||"";
   bindTabs();
-  renderStats(); renderProductsTable(); renderSalesTable(); renderSettingsInfo();
+  renderStats(); renderProductsTable(); renderSalesTable(); renderSettingsInfo(); renderGitHubInfo();
 }
 function bindTabs(){
   $$(".tab").forEach(b=> b.addEventListener("click", ()=>{
@@ -64,6 +66,38 @@ function renderSettingsInfo(){
   const s=loadSettings();
   $("#settingsInfo").innerHTML=`<span class="muted">Sheet ID:</span> ${s.sheetId||"<i>not set</i>"}<br><span class="muted">Apps Script URL:</span> ${s.appsScriptUrl||"<i>not set</i>"}`;
 }
+const LS_GH="dv_github";
+function loadGitHubSettings(){ try{ return JSON.parse(localStorage.getItem(LS_GH)||"{}"); }catch{ return {}; } }
+function saveGitHubSettings(){
+  const repo=$("#ghRepo").value.trim(), branch=$("#ghBranch").value.trim()||"main", folder=$("#ghFolder").value.trim()||"images", token=$("#ghToken").value.trim();
+  localStorage.setItem(LS_GH, JSON.stringify({repo,branch,folder,token}));
+  renderGitHubInfo(); toast("GitHub settings saved");
+}
+function renderGitHubInfo(){
+  const g=loadGitHubSettings();
+  $("#ghInfo").innerHTML= g.repo && g.token ? `<span style="color:#22c55e">● Ready</span> <span class="muted">Repo ${g.repo} → ${g.folder}/ on ${g.branch}</span>` : `<span class="muted">Not configured — images will be uploaded to <code>${(g.folder||"images")}/</code> once you save repo + token.</span>`;
+}
+async function uploadImageFile(input){
+  const file=input.files && input.files[0]; if(!file) return;
+  const g=loadGitHubSettings();
+  if(!g.repo || !g.token) return toast("Set GitHub repo & PAT in Settings first");
+  if(!g.repo.includes("/")) return toast("Repo must be owner/repo");
+  $("#uploadStatus").textContent="Uploading...";
+  try{
+    const b64=await fileToBase64(file);
+    const cleanName=file.name.replace(/[^a-zA-Z0-9._-]/g,"-");
+    const path=`${(g.folder||"images").replace(/^\/|\/$/g,"")}/${Date.now()}-${cleanName}`;
+    const url=`https://api.github.com/repos/${g.repo}/contents/${path}`;
+    const res=await fetch(url, {method:"PUT", headers:{Authorization:`token ${g.token}`, Accept:"application/vnd.github.v3+json", "Content-Type":"application/json"}, body: JSON.stringify({message:`Add product image ${cleanName}`, content:b64.split(",")[1], branch:g.branch||"main"})});
+    const j=await res.json();
+    if(!res.ok) throw new Error(j.message||res.statusText);
+    const raw=j.content ? j.content.download_url : `https://raw.githubusercontent.com/${g.repo}/${g.branch||"main"}/${path}`;
+    $("#p_image").value=raw;
+    $("#uploadStatus").innerHTML=`<span style="color:#22c55e">Uploaded ✔</span> <a href="${raw}" target="_blank" style="text-decoration:underline">view</a> — path will be saved on Save product`;
+    toast("Image uploaded to GitHub");
+  }catch(e){ $("#uploadStatus").textContent="Error: "+e.message; toast("Upload failed: "+e.message); }
+}
+function fileToBase64(f){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(f); }); }
 function saveSettingsUI(){
   const sheetId=$("#sheetId").value.trim(), appsScriptUrl=$("#appsUrl").value.trim();
   saveSettings({ ...loadSettings(), sheetId, appsScriptUrl });

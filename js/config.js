@@ -1,7 +1,7 @@
 const CONFIG = {
   storeName: "Let the chat decide",
   tagline: "Premium digital products — instant delivery",
-  supportEmail: "support@yourdomain.com",
+  supportEmail: "sociodigitallimasierra@gmail.com",
   currency: "USD",
   adminPassword: "cga4233Qwee",
   googleSheet: {

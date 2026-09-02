@@ -73,6 +73,20 @@
         <h3>Autonomous delivery</h3>
         <p class="muted" style="font-size:13px">When IPN is VERIFIED & payment_status=Completed, Apps Script creates the sale, decrements stock, and emails the <code>fileUrl</code> automatically. No manual action needed.</p>
       </div>
+      <div class="stat" style="grid-column:span 2">
+        <h3>GitHub image storage</h3>
+        <p class="muted" style="font-size:13px">Upload product images directly to your repo (so they work on GitHub Pages). Create a Classic PAT with <code>repo</code> scope at GitHub → Settings → Developer settings → Tokens, then paste below. Images go to <code>images/</code> in your repo.</p>
+        <label class="muted" style="font-size:12px;margin-top:8px;display:block">Repo (owner/repo)</label>
+        <input id="ghRepo" class="input" placeholder="youruser/your-repo">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+          <label class="muted" style="font-size:12px">Branch<input id="ghBranch" class="input" placeholder="main"></label>
+          <label class="muted" style="font-size:12px">Folder<input id="ghFolder" class="input" placeholder="images"></label>
+        </div>
+        <label class="muted" style="font-size:12px;margin-top:8px;display:block">GitHub PAT (stored locally in this browser only)</label>
+        <input id="ghToken" class="input" type="password" placeholder="ghp_...">
+        <button class="btn btn-primary btn-sm" style="margin-top:10px" onclick="saveGitHubSettings()">Save GitHub settings</button>
+        <div id="ghInfo" class="notice" style="margin-top:10px"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -87,6 +101,7 @@
       <label>Price USD<input id="p_price" class="input" type="number" step="0.01" min="0"></label>
       <label>Stock<input id="p_stock" class="input" type="number" step="1" min="0"></label>
       <label style="grid-column:span 2">Image URL or path<input id="p_image" class="input" placeholder="./producto-ejemplo.png or https://..."></label>
+      <label style="grid-column:span 2">Upload image to GitHub repo<input id="p_imageFile" class="input" type="file" accept="image/*" onchange="uploadImageFile(this)"><span class="muted" style="font-size:11px" id="uploadStatus"></span></label>
       <label style="grid-column:span 2">File / Download URL (Drive link)<input id="p_file" class="input" placeholder="https://drive.google.com/..."></label>
       <label style="grid-column:span 2">PayPal Payment Link<input id="p_paypal" class="input" placeholder="https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=you@email.com&amount=29.00&currency_code=USD&item_name=My+Product&custom=prod_001"></label>
       <label>Active<select id="p_active" class="select"><option value="true">Yes</option><option value="false">No (hidden)</option></select></label>

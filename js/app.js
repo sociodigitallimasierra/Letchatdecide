@@ -1,6 +1,6 @@
 const $ = s => document.querySelector(s);
 function formatUSD(n){ return new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(n); }
-function toast(msg){ const t=$("#toast"); if(!t) return; t.textContent=msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),2600); }
+function toast(msg){ const t=$("#toast"); if(!t) return; t.textContent=msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),3200); }
 function uuid(){ return "ord_"+Math.random().toString(36).slice(2,9) + Date.now().toString(36); }
 function downloadToken(){ return Math.random().toString(36).slice(2,10)+Math.random().toString(36).slice(2,10); }
 function getPayLink(p){ return p.paypalLink || p.stripeLink || ""; }
@@ -8,9 +8,8 @@ let PRODUCTS = loadProducts();
 async function init(){
   $("#storeName") && ($("#storeName").textContent = CONFIG.storeName);
   $("#storeTagline") && ($("#storeTagline").textContent = CONFIG.tagline);
-  const remote = await fetchProductsFromSheet();
-  if(remote) PRODUCTS = remote;
   render(PRODUCTS);
+  fetchProductsFromSheet().then(remote=>{ if(remote && remote.length){ PRODUCTS=remote; render(PRODUCTS); } });
   $("#searchInput")?.addEventListener("input", e=>{
     const q=e.target.value.toLowerCase().trim();
     render(PRODUCTS.filter(p=> (p.title+p.description).toLowerCase().includes(q)));
@@ -50,16 +49,13 @@ function closeDetails(){ $("#detailsModal").classList.remove("open"); }
 function buy(id){
   const p=PRODUCTS.find(x=>x.id===id); if(!p) return;
   if(p.stock<=0) return toast("This product is out of stock.");
-  const link=getPayLink(p);
-  if(link){ window.open(link, "_blank"); openCheckout(p, true); }
-  else openCheckout(p, false);
+  openCheckout(p);
 }
-function openCheckout(product, viaPaypal){
+function openCheckout(product){
   pendingProduct=product;
   $("#checkoutModal").classList.add("open");
-  $("#checkoutTitle").textContent = viaPaypal ? "Complete your PayPal payment, then enter email" : `Get instant download — ${product.title}`;
+  $("#checkoutTitle").textContent = `Complete your purchase — ${product.title}`;
   $("#checkoutPrice").textContent = formatUSD(Number(product.price));
-  $("#paypalHint").style.display = viaPaypal ? "block" : "none";
   $("#emailInput").value=""; $("#emailInput").focus();
 }
 function closeCheckout(){ $("#checkoutModal").classList.remove("open"); pendingProduct=null; }
@@ -68,33 +64,19 @@ async function confirmPurchase(){
   if(!pendingProduct) return;
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return toast("Please enter a valid email.");
   const product=pendingProduct;
+  const link=getPayLink(product);
   const token=downloadToken();
-  const sale={ id:uuid(), date:new Date().toISOString(), productId:product.id, product:product.title, email, amount:Number(product.price), currency:"USD", status:"paid", token, fileUrl: product.fileUrl||"#" };
+  const sale={ id:uuid(), date:new Date().toISOString(), productId:product.id, product:product.title, email, amount:Number(product.price), currency:"USD", status:"pending_paypal", token, fileUrl: product.fileUrl||"#" };
   const sales=loadSales(); sales.unshift(sale); saveSales(sales);
   recordSaleToSheet(sale);
-  product.stock = Math.max(0, Number(product.stock)-1);
-  saveProducts(PRODUCTS);
-  pushProductToSheet(product,"update");
-  render(PRODUCTS);
   closeCheckout();
-  showDownload(sale, product);
-  try{
-    const s=loadSettings();
-    if(s.appsScriptUrl){
-      await fetch(s.appsScriptUrl,{method:"POST", body: JSON.stringify({action:"sendDownload", sale}), headers:{"Content-Type":"text/plain"}});
-    }
-  }catch{}
-  toast("Payment registered — check your email! PayPal verification will also email you automatically.");
-}
-function showDownload(sale, product){
-  const url = product.fileUrl && product.fileUrl!=="#" ? product.fileUrl : `success.html?token=${sale.token}&id=${sale.productId}`;
+  if(link){ window.open(link, "_blank"); }
   const box=$("#downloadBox");
   if(box){
     box.style.display="block";
-    box.innerHTML=`<div class="notice"><b>Success!</b> Your download is ready. A link was also sent to <b>${sale.email}</b>.<br><a class="btn btn-primary" style="margin-top:10px;display:inline-flex" href="${url}" target="_blank" rel="noopener">Download now</a> <span class="muted" style="margin-left:8px">Order ${sale.id}</span></div>`;
+    box.innerHTML=`<div class="notice" style="border-color:#22c55e;background:rgba(34,197,94,.12);color:#dcfce7"><b>Payment initiated</b> — we opened PayPal in a new tab.<br>After you complete the payment, your download link will be sent automatically to <b>${sale.email}</b>. Please check your inbox and spam folder. Order <span class="muted">${sale.id}</span><br><span class="muted" style="font-size:12px">If you already paid, you'll receive the email within minutes (via PayPal IPN). If not, complete the PayPal checkout.</span></div>`;
     box.scrollIntoView({behavior:"smooth"});
-  } else {
-    location.href=url;
   }
+  toast("Check your email after PayPal payment — link is sent automatically.");
 }
 document.addEventListener("DOMContentLoaded", init);
