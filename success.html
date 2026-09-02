@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Download — Let the chat decide</title>
+<link rel="icon" href="./logo.png">
+<link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+<div class="container" style="max-width:640px;padding:40px 20px">
+  <a href="./" class="brand"><img src="./logo.png" alt="logo"><span>Let the chat decide</span></a>
+  <div class="stat" style="margin-top:18px">
+    <h1>Thank you for your purchase!</h1>
+    <p class="muted">Your download link is ready. If the button doesn't start, copy the link below.</p>
+    <a id="dlBtn" class="btn btn-primary" style="margin-top:14px;display:inline-flex" href="#" target="_blank" rel="noopener">Download your files</a>
+    <p id="tokenInfo" class="muted" style="font-size:12px;margin-top:10px"></p>
+    <p class="notice" style="margin-top:12px">A copy was also sent to your email (when Apps Script email is configured). Keep this link private — it contains your token.</p>
+    <a href="./" class="btn" style="margin-top:12px">← Back to store</a>
+  </div>
+</div>
+<script>
+const q=new URLSearchParams(location.search);
+const token=q.get("token"), id=q.get("id");
+document.getElementById("tokenInfo").textContent = token ? `Token: ${token} • Product: ${id||"-"}` : "No token in URL";
+try{
+  const products=JSON.parse(localStorage.getItem("dv_products")||"[]");
+  const p=products.find(x=>x.id===id);
+  const url=p && p.fileUrl && p.fileUrl!=="#" ? p.fileUrl : "#";
+  document.getElementById("dlBtn").href=url;
+  if(url==="#") document.getElementById("dlBtn").textContent="No file URL configured — contact support";
+}catch{}
+</script>
+</body>
+</html>
