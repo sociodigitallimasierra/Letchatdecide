@@ -92,14 +92,20 @@ async function confirmPurchase(){
   const sale={ id:uuid(), date:new Date().toISOString(), productId:product.id, product:product.title, email, amount:Number(product.price), currency:"USD", status:"pending_paypal", token, fileUrl: product.fileUrl||"#" };
   const sales=loadSales(); sales.unshift(sale); saveSales(sales);
   recordSaleToSheet(sale);
+  try{
+    const s=loadSettings();
+    if(s.appsScriptUrl){
+      fetch(s.appsScriptUrl,{method:"POST", body: JSON.stringify({action:"sendPendingEmail", sale}), headers:{"Content-Type":"text/plain"}});
+    }
+  }catch{}
   closeCheckout();
   if(link){ window.open(link, "_blank"); }
   const box=$("#downloadBox");
   if(box){
     box.style.display="block";
-    box.innerHTML=`<div class="notice" style="border-color:#22c55e;background:rgba(34,197,94,.12);color:#dcfce7"><b>Payment initiated</b> — we opened PayPal in a new tab.<br>After you complete the payment, your download link will be sent automatically to <b>${sale.email}</b>. Please check your inbox and spam folder. Order <span class="muted">${sale.id}</span><br><span class="muted" style="font-size:12px">If you already paid, you'll receive the email within minutes (via PayPal IPN). If not, complete the PayPal checkout.</span></div>`;
+    box.innerHTML=`<div class="notice" style="border-color:#22c55e;background:rgba(34,197,94,.12);color:#dcfce7"><b>Thank you for your purchase!</b> — we opened PayPal in a new tab.<br>We've sent a confirmation to <b>${sale.email}</b> — we're waiting for payment accreditation. Once confirmed, your files for <b>${product.title}</b> will be sent automatically to the same email. Order <span class="muted">${sale.id}</span><br><span class="muted" style="font-size:12px">Please check inbox and spam. If PayPal IPN is enabled, delivery is automatic in minutes.</span></div>`;
     box.scrollIntoView({behavior:"smooth"});
   }
-  toast("Check your email after PayPal payment — link is sent automatically.");
+  toast("Thank you — confirmation sent. Files will arrive after payment is confirmed.");
 }
 document.addEventListener("DOMContentLoaded", init);
