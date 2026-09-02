@@ -29,6 +29,7 @@ async function fetchProductsFromSheet(){
     if(j.products) {
       const norm=j.products.map(normalizeProduct).filter(p=>p && p.id && p.title);
       if(norm.length===0) return null;
+      saveProducts(norm);
       return norm;
     }
   }catch(e){ console.warn("Sheets fetch failed", e); }

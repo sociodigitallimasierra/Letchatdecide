@@ -13,10 +13,20 @@ async function init(){
   if(s.appsScriptUrl){
     fetchProductsFromSheet().then(remote=>{
       if(remote && remote.length){
-        const localStr=JSON.stringify(PRODUCTS.map(p=>p.id+':'+p.stock+':'+p.price).sort());
-        const remoteStr=JSON.stringify(remote.map(p=>p.id+':'+p.stock+':'+p.price).sort());
-        if(localStr!==remoteStr){
-          console.log(`Sheets stock/price differs from local — keeping local display. Use manage.html → Sync to update Sheets, or clear localStorage to force Sheets.`, {local:PRODUCTS, remote});
+        const isDemoLocal = PRODUCTS.length===1 && PRODUCTS[0].id==="prod_001" && PRODUCTS[0].title.includes("Ultimate Creator");
+        const isDifferent = JSON.stringify(PRODUCTS.map(p=>p.id).sort()) !== JSON.stringify(remote.map(p=>p.id).sort());
+        if(isDemoLocal || isDifferent || remote.length!==PRODUCTS.length){
+          PRODUCTS=remote;
+          render(PRODUCTS);
+          console.log(`Loaded ${remote.length} products from Google Sheets`);
+        } else {
+          const localStr=JSON.stringify(PRODUCTS.map(p=>p.id+':'+p.stock+':'+p.price).sort());
+          const remoteStr=JSON.stringify(remote.map(p=>p.id+':'+p.stock+':'+p.price).sort());
+          if(localStr!==remoteStr){
+            PRODUCTS=remote;
+            render(PRODUCTS);
+            console.log(`Updated from Sheets (stock/price changed)`);
+          }
         }
       }
     });
