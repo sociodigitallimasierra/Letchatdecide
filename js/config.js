@@ -5,8 +5,8 @@ const CONFIG = {
   currency: "USD",
   adminPassword: "cga4233Qwee",
   googleSheet: {
-    sheetId: "",
-    appsScriptUrl: "",
+    sheetId: "15-VnTEYhJN_FEBFZ3YQae2v_tIyYC3rowDHR5E2x-KY",
+    appsScriptUrl: "https://script.google.com/macros/s/AKfycbw3bFyUg4Ikp-6p8D6IDorZ6yhFHZdzU8J38ZAVg5mLJ1YpIXWdlUH_IZtBlvLFs3oC/exec",
     productsSheet: "Products",
     salesSheet: "Sales"
   },
