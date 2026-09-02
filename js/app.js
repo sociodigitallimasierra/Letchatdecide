@@ -92,6 +92,10 @@ async function confirmPurchase(){
   const sale={ id:uuid(), date:new Date().toISOString(), productId:product.id, product:product.title, email, amount:Number(product.price), currency:"USD", status:"pending_paypal", token, fileUrl: product.fileUrl||"#" };
   const sales=loadSales(); sales.unshift(sale); saveSales(sales);
   recordSaleToSheet(sale);
+  product.stock = Math.max(0, Number(product.stock)-1);
+  saveProducts(PRODUCTS);
+  pushProductToSheet(product,"update");
+  render(PRODUCTS);
   try{
     const s=loadSettings();
     if(s.appsScriptUrl){
