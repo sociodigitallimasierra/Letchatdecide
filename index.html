@@ -23,13 +23,13 @@
   <div class="container hero-content">
     <div class="kicker">Autonomous digital delivery • USD</div>
     <h1>Digital products,<br>delivered instantly.</h1>
-    <p id="storeTagline">Pay securely with Stripe. Get your download link automatically by email — no waiting, no manual steps.</p>
+    <p id="storeTagline">Pay securely with PayPal. Your download link will be sent automatically by email after payment.</p>
     <div class="hero-actions">
       <a href="#products" class="btn btn-primary">Browse products</a>
       <a href="#how" class="btn">How it works</a>
     </div>
     <div class="trust">
-      <span>✓ Instant download link</span><span>✓ Secure Stripe checkout</span><span>✓ USD pricing</span><span>✓ Email delivery</span>
+      <span>✓ Email delivery</span><span>✓ Secure PayPal checkout</span><span>✓ USD pricing</span><span>✓ Automatic link</span>
     </div>
   </div>
 </section>
@@ -37,8 +37,8 @@
 <section id="how" class="section container">
   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
     <div class="stat"><b>1. Choose</b><br><span class="muted">Pick your product. Every price is in USD.</span></div>
-    <div class="stat"><b>2. Pay with Stripe</b><br><span class="muted">Secure Payment Link. No account needed.</span></div>
-    <div class="stat"><b>3. Download</b><br><span class="muted">Receive your link by email + on-screen instantly.</span></div>
+    <div class="stat"><b>2. Pay with PayPal</b><br><span class="muted">You are redirected to PayPal — pay securely.</span></div>
+    <div class="stat"><b>3. Receive email</b><br><span class="muted">Download link sent to your email after verification.</span></div>
   </div>
 </section>
 
@@ -66,13 +66,13 @@
 
 <div id="checkoutModal" class="modal" role="dialog" aria-modal="true">
   <div class="modal-card">
-    <h3 id="checkoutTitle">Get instant download</h3>
-    <p class="muted" style="font-size:13px">Price <b id="checkoutPrice"></b> USD. Enter your email to receive the download link.</p>
-    <p id="paypalHint" class="notice" style="display:none;margin-top:10px">You opened the PayPal link. After paying there, enter the <b>same email</b> here to unlock your download. If PayPal IPN is configured, you'll also get the link automatically by email.</p>
+    <h3 id="checkoutTitle">Complete your purchase</h3>
+    <p class="muted" style="font-size:13px">Price <b id="checkoutPrice"></b> USD. Enter your email — after PayPal payment your link will be sent there.</p>
+    <div class="notice" style="margin-top:10px">You will be redirected to PayPal. Use the <b>same email</b> on PayPal so we can match and email you the download automatically.</div>
     <label class="muted" style="font-size:12px;margin-top:10px;display:block">Email for delivery</label>
     <input id="emailInput" class="input" type="email" placeholder="you@email.com" style="margin-top:6px">
-    <div class="row" style="margin-top:12px"><button class="btn" onclick="closeCheckout()">Cancel</button><button class="btn btn-primary" style="flex:1" onclick="confirmPurchase()">Confirm & get download</button></div>
-    <p class="muted" style="font-size:11px;margin-top:8px">Autonomous delivery: a unique tokenized link is generated and optionally emailed via Google Apps Script.</p>
+    <div class="row" style="margin-top:12px"><button class="btn" onclick="closeCheckout()">Cancel</button><button class="btn btn-primary" style="flex:1" onclick="confirmPurchase()">Continue to PayPal</button></div>
+    <p class="muted" style="font-size:11px;margin-top:8px">Files are delivered by email only — no download is shown on screen until payment is verified via PayPal IPN.</p>
   </div>
 </div>
 
