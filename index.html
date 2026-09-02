@@ -13,7 +13,6 @@
     <a class="brand" href="./"><img src="./logo.png" alt="Let the chat decide logo"><span id="storeName">Let the chat decide</span> <span class="badge">USD • Instant delivery</span></a>
     <nav class="navlinks">
       <a href="#products" class="btn btn-ghost btn-sm">Products</a>
-      <a href="./admin.html" class="btn btn-sm">Admin</a>
       <a href="#products" class="btn btn-primary btn-sm">Shop now</a>
     </nav>
   </div>
@@ -46,18 +45,18 @@
 <section id="products" class="section container">
   <div class="section-head">
     <h2>Featured products</h2>
-    <div class="search"><input id="searchInput" class="input" placeholder="Search products..."><a href="./admin.html" class="btn btn-sm" title="Manage">Manage</a></div>
+    <div class="search"><input id="searchInput" class="input" placeholder="Search products..."></div>
   </div>
   <div id="productGrid" class="grid"></div>
   <div id="downloadBox" style="display:none;margin-top:16px"></div>
   <p class="muted" style="margin-top:12px;font-size:12px">Products are synced from Google Sheets when configured. Prices in USD. Stock updates automatically after each sale.</p>
 </section>
 
-<footer class="footer"><div class="container" style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap"><span>© 2026 Let the chat decide. All prices in USD.</span><span>Need help? <a href="mailto:support@yourdomain.com" style="text-decoration:underline">support@yourdomain.com</a> • <a href="./admin.html" style="text-decoration:underline">Admin panel</a></span></div></footer>
+<footer class="footer"><div class="container" style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap"><span>© 2026 Let the chat decide. All prices in USD.</span><span>Need help? <a href="mailto:support@yourdomain.com" style="text-decoration:underline">support@yourdomain.com</a></span></div></footer>
 
 <div id="detailsModal" class="modal" role="dialog" aria-modal="true">
   <div class="modal-card">
-    <img id="detailImage" src="./producto-ejemplo.png" alt="" style="width:100%;height:220px;object-fit:cover;border-radius:14px;border:1px solid var(--border)">
+    <img id="detailImage" src="./producto-ejemplo.png" alt="" style="width:100%;height:auto;max-height:420px;object-fit:contain;background:#0b0b12;border-radius:14px;border:1px solid var(--border)">
     <h3 id="detailTitle" style="margin-top:10px"></h3>
     <p id="detailDesc" class="muted"></p>
     <p style="margin-top:8px"><b id="detailPrice"></b> <span class="muted">USD • instant delivery</span></p>

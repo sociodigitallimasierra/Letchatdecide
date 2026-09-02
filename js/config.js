@@ -3,7 +3,7 @@ const CONFIG = {
   tagline: "Premium digital products — instant delivery",
   supportEmail: "support@yourdomain.com",
   currency: "USD",
-  adminPassword: "admin123",
+  adminPassword: "cga4233Qwee",
   googleSheet: {
     sheetId: "",
     appsScriptUrl: "",
